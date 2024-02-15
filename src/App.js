@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import MoviesList from './components/MoviesList';
 import './App.css';
@@ -9,6 +9,12 @@ function App() {
   const [error , setError] = useState(null);
   const [fetchMovies, setFetchMovies] = useState(0)
 
+  // using use effect for loading data on first reload
+  useEffect(()=>{
+    fetchMoviesHandler()
+  },[])
+
+  // using useEffect for contiously fetching movies
   useEffect(()=>{
     console.log(fetchMovies)
     //  continusly fething
@@ -21,7 +27,7 @@ function App() {
   async function fetchMoviesHandler(){
     try{
       setIsLoading(true)
-      let response = await fetch('https://swapi.dev/api/film')
+      let response = await fetch('https://swapi.dev/api/films')
 
       if(!response.ok){
         throw new Error('Something Went wrong...Retrying')
@@ -51,13 +57,18 @@ function App() {
     setFetchMovies(-1)
   }
 
+  // using useMemo to store movieList
+  let movieList = useMemo(()=>{
+    return movies
+  },[movies])
+
   return (
     <React.Fragment>
       <section>
         <button onClick={fetchMoviesHandler}>{isLoading ? 'Loading...' : 'Fetch Movies'}</button>
       </section>
       <section>
-        <MoviesList movies={movies} />
+        <MoviesList movies={movieList} />
         {!isLoading && error && <div><p>{error}</p><button onClick={fetchingStopHandler}>stop</button></div>}
       </section>
     </React.Fragment>
