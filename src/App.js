@@ -4,11 +4,14 @@ import MoviesList from './components/MoviesList';
 import './App.css';
 
 function App() {
-  const [movies, setMovies] = useState([])
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false)
 
   async function fetchMoviesHandler(){
+    setIsLoading(true)
     let response = await fetch('https://swapi.dev/api/films')
     let responseObj = await response.json()
+    setIsLoading(false)
     let movies = responseObj.results.map((movie)=>{
       return {
         id : movie.episode_id,
@@ -24,7 +27,7 @@ function App() {
   return (
     <React.Fragment>
       <section>
-        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
+        <button onClick={fetchMoviesHandler}>{isLoading ? 'Loading...' : 'Fetch Movies'}</button>
       </section>
       <section>
         <MoviesList movies={movies} />
