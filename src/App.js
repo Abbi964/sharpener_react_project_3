@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import MoviesList from './components/MoviesList';
 import './App.css';
+import MovieForm from './components/MovieForm';
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -9,22 +10,7 @@ function App() {
   const [error , setError] = useState(null);
   const [fetchMovies, setFetchMovies] = useState(0)
 
-  // using use effect for loading data on first reload
-  useEffect(()=>{
-    fetchMoviesHandler()
-  },[])
-
-  // using useEffect for contiously fetching movies
-  useEffect(()=>{
-    console.log(fetchMovies)
-    //  continusly fething
-    if (fetchMovies > 0){
-      setTimeout(fetchMoviesHandler,2000)
-    }
-    
-  },[fetchMovies])
-
-  async function fetchMoviesHandler(){
+  const fetchMoviesHandler = useCallback(async()=>{
     try{
       setIsLoading(true)
       let response = await fetch('https://swapi.dev/api/films')
@@ -51,7 +37,21 @@ function App() {
       setFetchMovies(prev => +prev + 1)
     }
     setIsLoading(false)
-  }
+  },[])
+  
+  // using use effect for loading data on first reload
+  useEffect(()=>{
+    fetchMoviesHandler()
+  },[fetchMoviesHandler])
+
+  // using useEffect for contiously fetching movies
+  useEffect(()=>{
+    console.log(fetchMovies)
+    //  continusly fething
+    if (fetchMovies > 0){
+      setTimeout(fetchMoviesHandler,2000)
+    }  
+  },[fetchMovies,fetchMoviesHandler])
 
   function fetchingStopHandler(){
     setFetchMovies(-1)
@@ -64,6 +64,7 @@ function App() {
 
   return (
     <React.Fragment>
+      <MovieForm/>
       <section>
         <button onClick={fetchMoviesHandler}>{isLoading ? 'Loading...' : 'Fetch Movies'}</button>
       </section>
