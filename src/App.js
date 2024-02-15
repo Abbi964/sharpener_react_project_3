@@ -13,24 +13,28 @@ function App() {
   const fetchMoviesHandler = useCallback(async()=>{
     try{
       setIsLoading(true)
-      let response = await fetch('https://swapi.dev/api/films')
+      let response = await fetch('https://sharpener-project-3-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json')
 
       if(!response.ok){
         throw new Error('Something Went wrong...Retrying')
       }
 
       let responseObj = await response.json()
+      
+      let loadedMovies = [];
+
+      for (let key in responseObj){
+        loadedMovies.push({
+          id : key,
+          title : responseObj[key].title,
+          openingText : responseObj[key].openingText,
+          releseDate : responseObj[key].releseDate,
+        })
+      }
+
       setIsLoading(false)
-      let movies = responseObj.results.map((movie)=>{
-        return {
-          id : movie.episode_id,
-          title : movie.title,
-          openingText : movie.opening_crawl,
-          releseDate : movie.relese_date
-        }
-      })
   
-      setMovies(movies)
+      setMovies(loadedMovies)
     }
     catch(err){
       setError(err.message)
@@ -40,9 +44,9 @@ function App() {
   },[])
   
   // using use effect for loading data on first reload
-  useEffect(()=>{
-    fetchMoviesHandler()
-  },[fetchMoviesHandler])
+  // useEffect(()=>{
+  //   fetchMoviesHandler()
+  // },[fetchMoviesHandler])
 
   // using useEffect for contiously fetching movies
   useEffect(()=>{
@@ -62,14 +66,38 @@ function App() {
     return movies
   },[movies])
 
+
+  async function addMovieHandler(movieObj){
+    const response = await fetch('https://sharpener-project-3-default-rtdb.asia-southeast1.firebasedatabase.app/movies.json',{
+      method : 'POST',
+      body : JSON.stringify(movieObj),
+      headers : {
+        'content-Type' : 'application/json'
+      }
+    })
+    let data = await response.json();
+    console.log(data)
+  }
+
+  const onDeleteMovieHandler = useCallback(async(id)=>{
+    await fetch(`https://sharpener-project-3-default-rtdb.asia-southeast1.firebasedatabase.app/movies/${id}.json`,{
+      method : 'DELETE',
+      headers : {
+        'content-Type' : 'application/json'
+      }
+    })
+    
+    fetchMoviesHandler()
+  },[fetchMoviesHandler])
+
   return (
     <React.Fragment>
-      <MovieForm/>
+      <MovieForm onAddMovie={addMovieHandler}/>
       <section>
         <button onClick={fetchMoviesHandler}>{isLoading ? 'Loading...' : 'Fetch Movies'}</button>
       </section>
       <section>
-        <MoviesList movies={movieList} />
+        <MoviesList onDeleteMovie={onDeleteMovieHandler} movies={movieList} />
         {!isLoading && error && <div><p>{error}</p><button onClick={fetchingStopHandler}>stop</button></div>}
       </section>
     </React.Fragment>

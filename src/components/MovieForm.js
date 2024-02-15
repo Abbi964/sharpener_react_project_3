@@ -15,7 +15,7 @@ function MovieForm(props){
             releseDate : dateInputRef.current.value
         }
 
-        console.log(movieObj)
+        props.onAddMovie(movieObj)
         // clearing inputs
         titleInputRef.current.value = '';
         openingTextInputRef.current.value = '';
